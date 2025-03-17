@@ -60,6 +60,14 @@ class CustomerControllerTests {
         mockMvc.perform(get("/customer"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$..name").value("John Doe"));
-        ;
+    }
+
+    @Test
+    void testGetSpecifiedCustomers() throws Exception {
+        when(customerRepository.findByNameContainingIgnoreCase("John")).thenReturn(List.of(customer));
+
+        mockMvc.perform(get("/customer"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$..name").value("John Doe"));
     }
 }

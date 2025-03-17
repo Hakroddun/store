@@ -1,5 +1,7 @@
 package com.example.store.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.*;
 
 import lombok.Data;
@@ -18,13 +20,20 @@ public class Order {
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonManagedReference
     private Customer customer;
 
     @ManyToMany
     @JoinTable(
             name = "order_product",
             joinColumns = @JoinColumn(name = "order_id"),
-            inverseJoinColumns = @JoinColumn(name = "product_id")
-    )
+            inverseJoinColumns = @JoinColumn(name = "product_id"))
+    @JsonManagedReference
     private List<Product> products = new ArrayList<>();
+
+    @Override
+    public String toString() {
+        // Avoid printing products to prevent infinite recursion
+        return "Order{id=" + id + ", description='" + description + "'}";
+    }
 }
