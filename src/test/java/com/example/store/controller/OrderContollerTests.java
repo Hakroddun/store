@@ -37,16 +37,22 @@ class OrderControllerTests {
 
     @Autowired
     private MockMvc mockMvc;
+
     @Autowired
     private ObjectMapper objectMapper;
+
     @Autowired
     private OrderMapper orderMapper;
+
     @MockitoBean
     private OrderRepository orderRepository;
+
     @MockitoBean
     private CustomerRepository customerRepository;
+
     @MockitoBean
     private ProductRepository productRepository;
+
     @MockitoBean
     private OrderService orderService;
 
