@@ -1,7 +1,5 @@
 package com.example.store.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import jakarta.persistence.*;
 
 import lombok.Data;
@@ -20,7 +18,6 @@ public class Order {
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonManagedReference
     private Customer customer;
 
     @ManyToMany
@@ -28,8 +25,23 @@ public class Order {
             name = "order_product",
             joinColumns = @JoinColumn(name = "order_id"),
             inverseJoinColumns = @JoinColumn(name = "product_id"))
-    @JsonManagedReference
     private List<Product> products = new ArrayList<>();
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    public List<Product> getProducts() {
+        return products == null ? new ArrayList<>() : products;
+    }
+
+    public void setProducts(List<Product> products) {
+        this.products = products;
+    }
 
     @Override
     public String toString() {

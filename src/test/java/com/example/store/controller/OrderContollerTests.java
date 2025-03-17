@@ -4,6 +4,7 @@ import com.example.store.entity.Customer;
 import com.example.store.entity.Order;
 import com.example.store.entity.Product;
 import com.example.store.mapper.CustomerMapper;
+import com.example.store.mapper.ProductMapper;
 import com.example.store.repository.CustomerRepository;
 import com.example.store.repository.OrderRepository;
 import com.example.store.repository.ProductRepository;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(OrderController.class)
-@ComponentScan(basePackageClasses = CustomerMapper.class)
+@ComponentScan(basePackageClasses = {CustomerMapper.class, ProductMapper.class})
 @RequiredArgsConstructor
 class OrderControllerTests {
 
@@ -66,23 +67,19 @@ class OrderControllerTests {
         order.setId(1L);
         order.setCustomer(customer);
         order.setProducts(List.of(product));
-
     }
 
     @Test
     void testCreateOrder() throws Exception {
         when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
-        when(productRepository.findAllById(List.of(1L))).thenReturn(List.of(product));
         when(orderRepository.save(order)).thenReturn(order);
-        System.out.println(mockMvc.perform(post("/order")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(order))));
         mockMvc.perform(post("/order")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(order)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.description").value("Test Order"))
-                .andExpect(jsonPath("$.customer.name").value("John Doe"));
+                .andExpect(jsonPath("$.customer.name").value("John Doe"))
+                .andExpect(jsonPath("$.products[0].description").value("Test Product"));
     }
 
     @Test
@@ -91,17 +88,19 @@ class OrderControllerTests {
 
         mockMvc.perform(get("/order"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$..description").value("Test Order"))
-                .andExpect(jsonPath("$..customer.name").value("John Doe"));
+                .andExpect(jsonPath("$[0].description").value("Test Order"))
+                .andExpect(jsonPath("$[0].customer.name").value("John Doe"))
+                .andExpect(jsonPath("$[0].products[0].description").value("Test Product"));
     }
 
     @Test
     void testGetOrderById() throws Exception {
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
 
-        mockMvc.perform(get("/order"))
+        mockMvc.perform(get("/order/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$..description").value("Test Order"))
-                .andExpect(jsonPath("$..customer.name").value("John Doe"));
+                .andExpect(jsonPath("$.description").value("Test Order"))
+                .andExpect(jsonPath("$.customer.name").value("John Doe"))
+                .andExpect(jsonPath("$.products[0].description").value("Test Product"));
     }
 }

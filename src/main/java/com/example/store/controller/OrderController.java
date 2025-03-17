@@ -2,14 +2,12 @@ package com.example.store.controller;
 
 import com.example.store.dto.OrderDTO;
 import com.example.store.entity.Order;
-import com.example.store.mapper.OrderMapper;
-import com.example.store.repository.OrderRepository;
-
-import jakarta.persistence.EntityNotFoundException;
+import com.example.store.service.OrderService;
 
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,25 +17,26 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderController {
 
-    private final OrderRepository orderRepository;
-    private final OrderMapper orderMapper;
+    private final OrderService orderService;
 
     @GetMapping
-    public List<OrderDTO> getAllOrders() {
-        System.out.println(orderRepository.findAll());
-        return orderMapper.ordersToOrderDTOs(orderRepository.findAll());
+    public ResponseEntity<List<OrderDTO>> getAllOrders() {
+        List<OrderDTO> orderDTOs = orderService.getAllOrders();
+        return ResponseEntity.ok(orderDTOs);
     }
 
+    // Endpoint to get an order by ID
     @GetMapping("/{id}")
-    public OrderDTO getOrderById(@PathVariable Long id) {
-        return orderMapper.orderToOrderDTO(orderRepository
-                .findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Order not found with ID: " + id)));
+    public ResponseEntity<OrderDTO> getOrder(@PathVariable Long id) {
+        OrderDTO orderDTO = orderService.getOrderById(id);
+        return ResponseEntity.ok(orderDTO);
     }
 
+    // Endpoint to create an order
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public OrderDTO createOrder(@RequestBody Order order) {
-        return orderMapper.orderToOrderDTO(orderRepository.save(order));
+    public ResponseEntity<OrderDTO> createOrder(@RequestBody Order order) {
+        OrderDTO createdOrder = orderService.createOrder(order);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
     }
 }

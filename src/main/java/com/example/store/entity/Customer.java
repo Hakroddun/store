@@ -1,7 +1,5 @@
 package com.example.store.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-
 import jakarta.persistence.*;
 
 import lombok.Data;
@@ -19,6 +17,9 @@ public class Customer {
     private String name;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonBackReference
     private List<Order> orders = new ArrayList<>();
+
+    public Long getId() {
+        return id;
+    }
 }
