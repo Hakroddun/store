@@ -70,7 +70,7 @@ class ProductControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.description1").value(productDescription))
+                .andExpect(jsonPath("$.description").value(productDescription))
                 .andExpect(jsonPath("$.orders[0].description").value(orderDescription));
     }
 
