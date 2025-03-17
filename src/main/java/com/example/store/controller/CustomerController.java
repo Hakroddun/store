@@ -25,6 +25,12 @@ public class CustomerController {
         return customerMapper.customersToCustomerDTOs(customerRepository.findAll());
     }
 
+    @GetMapping("/search")
+    public List<CustomerDTO> searchCustomers(@RequestParam String query) {
+        return customerMapper.customersToCustomerDTOs(customerRepository.findByNameContainingIgnoreCase(query));
+
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CustomerDTO createCustomer(@RequestBody Customer customer) {
