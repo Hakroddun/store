@@ -4,8 +4,10 @@ import com.example.store.entity.Order;
 import com.example.store.entity.Product;
 import com.example.store.mapper.CustomerMapper;
 import com.example.store.mapper.OrderMapper;
+import com.example.store.mapper.ProductMapper;
 import com.example.store.repository.OrderRepository;
 import com.example.store.repository.ProductRepository;
+import com.example.store.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -39,11 +41,17 @@ class ProductControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private ProductMapper productMapper;
+
     @MockitoBean
     private OrderRepository orderRepository;
 
     @MockitoBean
     private ProductRepository productRepository;
+
+    @MockitoBean
+    private ProductService productService;
 
     private Product product;
     private String productDescription = "Test Product";
@@ -64,8 +72,10 @@ class ProductControllerTest {
 
     @Test
     void testCreateOrder() throws Exception {
-        when(orderRepository.findAllById(List.of(1L))).thenReturn(List.of(order));
+        when(orderRepository.findAllById(List.of(product.getId()))).thenReturn(List.of(order));
         when(productRepository.save(product)).thenReturn(product);
+        when(productService.createProduct(product)).thenReturn(productMapper.productToProductDTO(product));
+
         mockMvc.perform(post("/product")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
@@ -77,6 +87,7 @@ class ProductControllerTest {
     @Test
     void testGetOrders() throws Exception {
         when(productRepository.findAll()).thenReturn(List.of(product));
+        when(productService.getAllProducts()).thenReturn(productMapper.productsToProductDTOs(List.of(product)));
 
         mockMvc.perform(get("/product"))
                 .andExpect(status().isOk())
@@ -86,7 +97,8 @@ class ProductControllerTest {
 
     @Test
     void testGetOrderById() throws Exception {
-        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+        when(productService.getProductById(product.getId())).thenReturn(productMapper.productToProductDTO(product));
 
         mockMvc.perform(get("/product/1"))
                 .andExpect(status().isOk())

@@ -4,12 +4,15 @@ import com.example.store.dto.OrderDTO;
 import com.example.store.entity.Customer;
 import com.example.store.entity.Order;
 import com.example.store.entity.Product;
+import com.example.store.exception.CustomerNotFoundException;
+import com.example.store.exception.ProductNotFoundException;
 import com.example.store.mapper.OrderMapper;
 import com.example.store.repository.CustomerRepository;
 import com.example.store.repository.OrderRepository;
 import com.example.store.repository.ProductRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +22,7 @@ import java.util.List;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class OrderService {
 
     private final OrderRepository orderRepository;
@@ -40,14 +44,25 @@ public class OrderService {
         // Ensure the customer exists
         Customer customer = customerRepository
                 .findById(order.getCustomer().getId())
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new CustomerNotFoundException(
+                        "Customer id " + order.getCustomer().getId() + " not found"));
 
         order.setCustomer(customer);
 
         // Ensure products exist and set the products in the order
-        for (Product product : order.getProducts()) {
-            productRepository.save(product); // Make sure products are persisted
-        }
+        List<Product> validProducts = order.getProducts().stream()
+                .map(product -> {
+                    if (product.getId() == null) {
+                        throw new ProductNotFoundException("Product ID must be specified");
+                    }
+                    return productRepository
+                            .findById(product.getId())
+                            .orElseThrow(
+                                    () -> new ProductNotFoundException("Product id " + product.getId() + " not found"));
+                })
+                .toList();
+
+        order.setProducts(validProducts);
 
         return orderMapper.orderToOrderDTO(orderRepository.save(order));
     }

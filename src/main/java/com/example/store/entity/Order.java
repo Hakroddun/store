@@ -27,6 +27,10 @@ public class Order {
             inverseJoinColumns = @JoinColumn(name = "product_id"))
     private List<Product> products = new ArrayList<>();
 
+    public Long getId() {
+        return id;
+    }
+
     public Customer getCustomer() {
         return customer;
     }

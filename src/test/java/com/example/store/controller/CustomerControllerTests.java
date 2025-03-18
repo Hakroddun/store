@@ -3,6 +3,7 @@ package com.example.store.controller;
 import com.example.store.entity.Customer;
 import com.example.store.mapper.CustomerMapper;
 import com.example.store.repository.CustomerRepository;
+import com.example.store.service.CustomerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -30,8 +31,14 @@ class CustomerControllerTests {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private CustomerMapper customerMapper;
+
     @MockitoBean
     private CustomerRepository customerRepository;
+
+    @MockitoBean
+    private CustomerService customerService;
 
     private Customer customer;
 
@@ -45,6 +52,7 @@ class CustomerControllerTests {
     @Test
     void testCreateCustomer() throws Exception {
         when(customerRepository.save(customer)).thenReturn(customer);
+        when(customerService.createCustomer(customer)).thenReturn(customerMapper.customerToCustomerDTO(customer));
 
         mockMvc.perform(post("/customer")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -56,6 +64,7 @@ class CustomerControllerTests {
     @Test
     void testGetAllCustomers() throws Exception {
         when(customerRepository.findAll()).thenReturn(List.of(customer));
+        when(customerService.getAllCustomers()).thenReturn(customerMapper.customersToCustomerDTOs(List.of(customer)));
 
         mockMvc.perform(get("/customer"))
                 .andExpect(status().isOk())
@@ -65,6 +74,8 @@ class CustomerControllerTests {
     @Test
     void testGetSpecifiedCustomers() throws Exception {
         when(customerRepository.findByNameContainingIgnoreCase("John")).thenReturn(List.of(customer));
+        when(customerService.searchCustomers("John"))
+                .thenReturn(customerMapper.customersToCustomerDTOs(List.of(customer)));
 
         mockMvc.perform(get("/customer/search?query=John"))
                 .andExpect(status().isOk())
